@@ -1,0 +1,258 @@
+<!-- patient_statistics.html -->
+{% extends '_layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Статистика</h1>
+
+    <div class="mb-3">
+        <a href="{% url 'export_patient_statistics' %}" class="btn btn-success me-2" role="button">Выгрузить список пациентов (CSV)</a>
+        <a href="{% url 'export_visit_statistics' %}" class="btn btn-success me-2" role="button">Выгрузить список посещений (CSV)</a>
+    </div>
+
+    <div class="btn-group" role="group" aria-label="Statistics Toggle">
+        <button type="button" class="btn btn-primary" id="patient-statistics-btn">Статистика по пациентам</button>
+        <button type="button" class="btn btn-secondary" id="visit-statistics-btn">Статистика по посещениям</button>
+    </div>
+
+    <div id="patient-statistics" class="statistics-section mt-3">
+        <h3>Статистика по пациентам</h3>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Общее количество пациентов: {{ total_patients }}</h3>
+            </div>
+            <div class="col-md-6">
+                <h3>Общее количество посещений: {{ visits_count }}</h3>
+            </div>
+        </div>
+
+        <h3>Распределение по возрастным группам:</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Возрастная группа</th>
+                    <th>Количество пациентов</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0-18 лет</td>
+                    <td>{{ age_groups.age_0_18 }}</td>
+                </tr>
+                <tr>
+                    <td>19-30 лет</td>
+                    <td>{{ age_groups.age_19_30 }}</td>
+                </tr>
+                <tr>
+                    <td>31-50 лет</td>
+                    <td>{{ age_groups.age_31_50 }}</td>
+                </tr>
+                <tr>
+                    <td>51+ лет</td>
+                    <td>{{ age_groups.age_51_plus }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Распределение по полу:</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Пол</th>
+                    <th>Количество пациентов</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Мужчины</td>
+                    <td>{{ gender_distribution.М }}</td>
+                </tr>
+                <tr>
+                    <td>Женщины</td>
+                    <td>{{ gender_distribution.Ж }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Диаграммы распределения</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="ageGroupChart" width="400" height="200"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="genderChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="visit-statistics" class="statistics-section mt-3" style="display: none;">
+        <h3>Статистика по посещениям</h3>
+
+        <h3>Распределение по симптомам:</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Симптом</th>
+                    <th>Количество посещений</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for symptom in symptoms %}
+                    <tr>
+                        <td>{{ symptom.name }}</td>
+                        <td>
+                            {% for item in symptoms_count %}
+                                {% if item.symptoms == symptom.id %}
+                                    {{ item.count }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Распределение по диагнозам:</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Диагноз</th>
+                    <th>Количество посещений</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for diagnosis in diagnosis_count %}
+                    <tr>
+                        <td>{{ diagnosis.diagnosis }}</td>
+                        <td>{{ diagnosis.count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Распределение по дате посещений:</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Дата посещения</th>
+                    <th>Количество посещений</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for date_visit in date_visit_count %}
+                    <tr>
+                        <td>{{ date_visit.visit_date__date }}</td>
+                        <td>{{ date_visit.count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Диаграммы для посещений</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="symptomChart" width="400" height="200"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="diagnosisChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctxAgeGroup = document.getElementById('ageGroupChart').getContext('2d');
+    const ageGroupChart = new Chart(ctxAgeGroup, {
+        type: 'bar',
+        data: {
+            labels: ['0-18 лет', '19-30 лет', '31-50 лет', '51+ лет'],
+            datasets: [{
+                label: 'Количество пациентов',
+                data: [{{ age_groups.age_0_18 }}, {{ age_groups.age_19_30 }}, {{ age_groups.age_31_50 }}, {{ age_groups.age_51_plus }}],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    const ctxGender = document.getElementById('genderChart').getContext('2d');
+    const genderChart = new Chart(ctxGender, {
+        type: 'pie',
+        data: {
+            labels: ['Мужчины', 'Женщины'],
+            datasets: [{
+                label: 'Количество пациентов',
+                data: [{{ gender_distribution.М }}, {{ gender_distribution.Ж }}],
+                backgroundColor: ['#FF6384', '#36A2EB'],
+                hoverOffset: 4
+            }]
+        }
+    });
+
+    const ctxSymptom = document.getElementById('symptomChart').getContext('2d');
+    const symptomChart = new Chart(ctxSymptom, {
+        type: 'bar',
+        data: {
+            labels: [{% for symptom1 in symptoms %}'{{ symptom1.name }}',{% endfor %}],
+            datasets: [{
+                label: 'Количество посещений',
+                data: [{% for symptom in symptoms_count %}{{ symptom.count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    const ctxDiagnosis = document.getElementById('diagnosisChart').getContext('2d');
+    const diagnosisChart = new Chart(ctxDiagnosis, {
+        type: 'bar',
+        data: {
+            labels: [{% for diagnosis in diagnosis_count %}'{{ diagnosis.diagnosis }}',{% endfor %}],
+            datasets: [{
+                label: 'Количество посещений',
+                data: [{% for diagnosis in diagnosis_count %}{{ diagnosis.count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    const patientStatisticsSection = document.getElementById('patient-statistics');
+    const visitStatisticsSection = document.getElementById('visit-statistics');
+    const patientStatisticsBtn = document.getElementById('patient-statistics-btn');
+    const visitStatisticsBtn = document.getElementById('visit-statistics-btn');
+
+    patientStatisticsBtn.addEventListener('click', () => {
+        patientStatisticsSection.style.display = 'block';
+        visitStatisticsSection.style.display = 'none';
+        patientStatisticsBtn.classList.add('btn-primary');
+        patientStatisticsBtn.classList.remove('btn-secondary');
+        visitStatisticsBtn.classList.add('btn-secondary');
+        visitStatisticsBtn.classList.remove('btn-primary');
+    });
+
+    visitStatisticsBtn.addEventListener('click', () => {
+        visitStatisticsSection.style.display = 'block';
+        patientStatisticsSection.style.display = 'none';
+        visitStatisticsBtn.classList.add('btn-primary');
+        visitStatisticsBtn.classList.remove('btn-secondary');
+        patientStatisticsBtn.classList.add('btn-secondary');
+        patientStatisticsBtn.classList.remove('btn-primary');
+    });
+</script>
+{% endblock %}

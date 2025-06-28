@@ -1,0 +1,43 @@
+{% extends '_layout.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>{{ visit.patient.last_name }} {{ visit.patient.first_name }} {{ visit.patient.middle_name }}</h1>
+    <form method="post" id="save-form">
+       {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary" id="save-btn">Сохранить изменения</button>
+    </form>
+    <form action="{% url 'delete_visit' visit.id %}" method="post" id="delete-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" id="delete-btn">Удалить посещение</button>
+    </form>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+                flatpickr('#id_visit_date', {
+                    enableTime: true,
+                    dateFormat: "d.m.Y H:i",
+                    locale: "ru"
+                });
+            });
+            $(document).ready(function() {
+                $('#save-btn').click(function(event) {
+                    event.preventDefault();
+                    var confirmUpdate = confirm('Вы уверены, что хотите обновить данные этого посещения?');
+                    if (confirmUpdate) {
+                        $('#save-form').submit();
+                    }
+                });
+                $('#delete-btn').click(function(event) {
+                    event.preventDefault();
+                    var confirmDelete = confirm('Вы уверены, что хотите удалить это посещение?');
+                    if (confirmDelete) {
+                        $('#delete-form').submit();
+                    }
+                });
+            });
+    </script>
+{% endblock %}

@@ -1,0 +1,311 @@
+{% extends '_layout.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="row" id="user-info">
+        <p id="user-title">Пользователь</p>
+        <p id="user-text"><span>Имя пользователя:</span> {{ user.username }} </p>
+    </div>
+    {% if user.patient %}
+        <div class="row" id="patient-info">
+            <div class="col-md-6" id="patient-info-left">
+                <p id="patient-title">Пациент</p>
+                <p><span>Фамилия:</span> {{ user.patient.last_name }}</p>
+                <p><span>Имя:</span> {{ user.patient.first_name }}</p>
+                <p><span>Отчество:</span> {{ user.patient.middle_name }}</p>
+                <p><span>Дата рождения:</span> {{ user.patient.date_of_birth }}</p>
+                <p><span>Количество посещений:</span> {{ user.patient.visit_set.all.count }}</p>
+            </div>
+            <div class="col-md-6" id="patient-info-right">
+                <img src="/static/images/profile_logo.png" id="profile-img">
+            </div>
+        </div>
+
+
+    <div class="col-md-8" id="patient-visits">
+        <p id="visits-title">Мои посещения</p>
+        <div class="table-responsive">
+
+        <button class="btn btn-primary" id="filter-visits">Применить фильтры</button>
+        <a class="btn btn-secondary" id="filter-visits" href="{% url 'profile' %}">Сбросить фильтры</a>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Дата посещения
+                            <input type="text" name="visit_date" id="visit_date" class="form-control">
+                        </th>
+                        <th>Врач
+                            <input type="text" name="doctor" id="doctor" class="form-control">
+                        </th>
+                        <th>Специальность врача
+                            <select name="doctor_specialty" id="doctor_specialty" class="form-control">
+                                <option value="">Все</option>
+                                <option value="ТЕР">Терапевт</option>
+                                <option value="НЕВ">Невролог</option>
+                                <option value="ОКУ">Окулист</option>
+                                <option value="ДЕР">Дерматолог</option>
+                                <option value="ХИР">Хирург</option>
+                            </select>
+                        </th>
+                        <th>Симптомы
+                            <input type="text" name="symptoms" id="symptoms" class="form-control">
+                        </th>
+                        <th>Физический осмотр
+                            <input type="text" name="examination" id="examination" class="form-control">
+                        </th>
+                        <th>Диагноз
+                            <input type="text" name="diagnosis" id="diagnosis" class="form-control">
+                        </th>
+                        <th>Рецепт
+                            <input type="text" name="prescriptions" id="prescriptions" class="form-control">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="visit-list-body">
+                    {% for visit in visits %}
+                        <tr class='clickable-row' data-href="{% url 'view_visit' visit.id %}">
+                            <td>{{ visit.visit_date|date:"d.m.Y H:i" }}</td>
+                            <td>{{ visit.doctor.last_name }} {{ visit.doctor.first_name }} {{ visit.doctor.middle_name }}</td>
+                            <td>{{ visit.doctor.get_specialty_display }}</td>
+                            <td>{{ visit.symptoms_text|truncatechars:20 }}</td>
+                            <td>{{ visit.examination|truncatechars:17 }}</td>
+                            <td>{{ visit.diagnosis|truncatechars:7 }}</td>
+                            <td>{{ visit.prescriptions|truncatechars:7 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if visits.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ visits.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&lsaquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in visits.paginator.page_range %}
+                        <li class="page-item {% if num == visits.number %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+
+                    {% if visits.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ visits.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&rsaquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ visits.paginator.num_pages }}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+
+
+        <div id="patient-analyses" data-manage-analyses-url="{% url 'profile' %}">
+        <p id="analyses-title">Мои анализы</p>
+
+        <button class="btn btn-primary" id="filter-analyses">Применить фильтры</button>
+        <a class="btn btn-secondary" id="reset-filters" href="{% url 'profile' %}">Сбросить фильтры</a>
+            <table class="table table-striped" id="table-analyses">
+                <thead>
+                    <tr>
+                        <th>Название анализа
+                            <input type="text" name="test_name" id="test_name" class="form-control">
+                        </th>
+                        <th>Результат
+                            <input type="text" name="result" id="result" class="form-control">
+                        </th>
+                        <th>Дата
+                            <input type="text" name="date" id="date" class="form-control" placeholder="Введите дату (дд.мм.гггг — дд.мм.гггг)">
+                        </th>
+                        <th>Статус
+                            <select name="status" id="status" class="form-control">
+                                <option value="">Все</option>
+                                <option value="new">Новый</option>
+                                <option value="in_progress">В процессе</option>
+                                <option value="completed">Завершён</option>
+                                <option value="cancelled">Отменён</option>
+                            </select>
+                        </th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="patient-analyses-body">
+                    {% for analysis in analyses %}
+                        <tr class="clickable-row" data-href="{% url 'view_analysis' analysis.id %}">
+                            <td>{{ analysis.test_name }}</td>
+                            <td>{{ analysis.result }}</td>
+                            <td>{{ analysis.date|date:"d.m.Y" }}</td>
+                            <td>{{ analysis.get_status_display }}</td>
+                            <td>
+                                <a href="{% url 'download_analysis' analysis.id %}" class="btn btn-info btn-sm">Скачать</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Анализы не найдены.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center">
+            {% if analyses.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?analysis_page=1">&laquo;</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?analysis_page={{ analyses.previous_page_number }}">&lsaquo;</a>
+              </li>
+            {% endif %}
+
+            {% for num in analyses.paginator.page_range %}
+              {% if num >= analyses.number|add:-2 and num <= analyses.number|add:2 %}
+                <li class="page-item {% if num == analyses.number %}active{% endif %}">
+                  <a class="page-link" href="?analysis_page={{ num }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if analyses.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?analysis_page={{ analyses.next_page_number }}">&rsaquo;</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?analysis_page={{ analyses.paginator.num_pages }}">&raquo;</a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+        </div>
+
+
+    {% elif user.doctor %}
+
+        <div class="row" id="doctor-info">
+            <div class="col-md-6" id="doctor-info-left">
+                <p id="doctor-title">Врач</p>
+                <p><span>Фамилия:</span> {{ user.doctor.last_name }}</p>
+                <p><span>Имя:</span> {{ user.doctor.first_name }}</p>
+                <p><span>Отчество:</span> {{ user.doctor.middle_name }}</p>
+                <p><span>Дата рождения:</span> {{ user.doctor.date_of_birth }}</p>
+                <p><span>Количество посещений:</span> {{ user.doctor.visit_set.all.count }}</p>
+            </div>
+            <div class="col-md-6" id="doctor-info-right">
+                <img src="/static/images/profile_logo.png" id="profile-img">
+            </div>
+        </div>
+        <div class="col-md-8" id="doctor-visits">
+        <p id="visits-title">Мои посещения</p>
+        <div class="table-responsive">
+        <button class="btn btn-primary" id="filter-visits">Применить фильтры</button>
+        <a class="btn btn-secondary" id="filter-visits" href="{% url 'profile' %}">Сбросить фильтры</a>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Дата посещения
+                            <input type="text" name="visit_date" id="visit_date" class="form-control">
+                        </th>
+                        <th>Пациент
+                            <input type="text" name="patient" id="patient" class="form-control">
+                        </th>
+                        <th>Симптомы
+                            <input type="text" name="symptoms" id="symptoms" class="form-control">
+                        </th>
+                        <th>Физический осмотр
+                            <input type="text" name="examination" id="examination" class="form-control">
+                        </th>
+                        <th>Диагноз
+                            <input type="text" name="diagnosis" id="diagnosis" class="form-control">
+                        </th>
+                        <th>Рецепт
+                            <input type="text" name="prescriptions" id="prescriptions" class="form-control">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="visit-list-body">
+                    {% for visit in visits %}
+                        <tr class='clickable-row' data-href="{% url 'view_visit' visit.id %}">
+                            <td>{{ visit.visit_date|date:"d.m.Y H:i" }}</td>
+                            <td>{{ visit.patient.last_name }} {{ visit.patient.first_name }} {{ visit.patient.middle_name }}</td>
+                            <td>{{ visit.symptoms|truncatechars:8 }}</td>
+                            <td>{{ visit.examination|truncatechars:17 }}</td>
+                            <td>{{ visit.diagnosis|truncatechars:7 }}</td>
+                            <td>{{ visit.prescriptions|truncatechars:7 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if visits.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ visits.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&lsaquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in visits.paginator.page_range %}
+                        <li class="page-item {% if num == visits.number %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+
+                    {% if visits.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ visits.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&rsaquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ visits.paginator.num_pages }}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script src="{% static 'scripts/profile_visits_list.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr("#visit_date", {
+                mode: "range", // Режим выбора промежутка
+                enableTime: true, // Включение выбора времени
+                dateFormat: "d.m.Y H:i", // Формат даты и времени, который будет отправлен на сервер
+                time_24hr: true, // Использование 24-часового формата времени
+                locale: "ru" // Установка языка на русский
+            });
+        })
+    </script>
+
+    {% endif %}
+{% endblock %}

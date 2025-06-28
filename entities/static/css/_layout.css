@@ -1,0 +1,637 @@
+@font-face {
+    font-family: 'Proxima Nova Regular'; 
+    src: url('../fonts/proximanova_regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal; 
+}
+
+@font-face {
+    font-family: 'Proxima Nova Bold'; 
+    src: url('../fonts/proximanova_bold.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal; 
+}
+
+img.logo.fa-align-center {
+    margin-left: 30%;
+    margin-top: 10%;
+    position: relative;
+    max-width: 15%;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+.wrapper {
+	display: flex;
+    background: url("/static/images/background.png");
+    background-position: center;
+    background-size: 100% 100%;
+	flex-direction: column;
+	min-height: 100%;
+}
+
+.content {
+    flex: 1 0 auto;
+}
+
+.footer {
+    flex: 0 0 auto;
+    height: 65px;
+    text-align: center;
+    font-size: 12px;
+    background-color: transparent;
+    color: black;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+}
+
+.container.text-center {
+    font-size: 1rem;
+}
+
+
+.footer p {
+        margin: 0; 
+}
+
+.col-md-8 {
+    width: 100%;
+}
+
+#patient-list-body tr.clickable-row:hover td {
+    background-color: lightyellow !important;
+    box-shadow: none !important;
+    cursor: pointer;
+}
+
+#doctor-list-body tr.clickable-row:hover td {
+    background-color: lightyellow !important;
+    box-shadow: none !important;
+    cursor: pointer;
+}
+
+#visit-list-body tr.clickable-row:hover td {
+    background-color: lightyellow !important;
+    box-shadow: none !important;
+    cursor: pointer;
+}
+
+form.input-row {
+    margin-left: 3%;
+    width: 20%;
+}
+
+.pagination {
+    justify-content: center;
+    place-items: center;
+}
+
+.prev-page, next-page {
+    justify-content: center;
+    place-items: center;
+}
+
+.col-md-6.left {
+    max-width: 100%;
+    padding-left: 10px;
+    padding-right: 50px;
+}
+.col-md-6.right {
+    max-width: 100%;
+}
+.row {
+    --bs-gutter-x: 0;
+    --bs-gutter-y: 0;
+}
+
+form#save-form {
+    padding-left: 20px;
+    max-width: 50%;
+}
+
+/*div#user-info {*/
+/*    padding: 1rem;*/
+/*}*/
+
+div#patient-visits {
+    padding: 1rem;
+}
+
+div#patient-analyses {
+    padding: 1rem;
+}
+
+#table-analyses {
+    background-color: #ebf0f7;
+    border-radius: 1rem;
+}
+
+/*div#doctor-info {*/
+/*    padding: 1rem;*/
+/*}*/
+
+div#doctor-visits {
+    padding: 1rem;
+}
+
+
+
+nav.navbar.navbar-expand-lg {
+    background: #005e7d;
+    color:white;
+}
+
+a.navbar-brand {
+    color: white;
+    font-weight: bold;
+}
+
+a.navbar-brand:hover {
+    color: #0085b2;
+    font-weight: bold;
+}
+
+a#navbarDarkDropdownMenuLink {
+    color: white;
+}
+
+a#navbarDarkDropdownMenuLink:hover {
+    color: #0085b2;
+
+}
+
+a.nav-link {
+    color: white;
+}
+
+a.nav-link:hover {
+    color: #0085b2;
+}
+
+button.nav-link {
+    color: white;
+}
+
+button.nav-link:hover {
+    color: #0085b2;
+}
+
+
+ul.dropdown-menu.show {
+    background: #005e7d;
+}
+
+a.dropdown-item {
+    color: white;
+}
+
+/* main.html */
+.row.justify-content-center {
+    transform: translateY(-50%);
+    top: 50%;
+    position: absolute;
+}
+
+.col-md-8.align-center.top-100 {
+    padding: 1rem;
+    text-align: -webkit-center;
+}
+
+p.text-center {
+    max-width: 40%;
+    font-family: "Proxima Nova Regular";
+    font-size: 1.5rem;
+    /* left: 50%; */
+}
+
+p#welcome {
+    font-size: 4rem;
+    color: #0086b3;
+    font-family: "Proxima Nova Bold";
+}
+
+/* login.html */
+div#login {
+    height: 100%;
+    position: fixed;
+}
+
+div#login-left {
+    position: relative;
+    align-content: center;
+    left: 16rem;
+}
+
+form#login-form {
+    background: #c6e0fc;
+    border-radius: 10px;
+    /* border-color: black; */
+    border: #00607f;
+    padding: 2rem;
+    padding-right: 8rem;
+    border-width: 0.3rem;
+    width: 35rem;
+    height: 30rem;
+    top: -10rem;
+    position: relative;
+}
+
+p#login-title {
+    font-size: 3rem;
+    color: #0086b3;
+    font-family: "Proxima Nova Bold";
+}
+
+label.requiredField {
+    font-family: "Proxima Nova Regular";
+    font-size: 1.2rem;
+}
+
+label {
+    font-family: "Proxima Nova Regular";
+    font-size: 1.2rem;
+}
+
+input#id_username {
+    font-family: "Proxima Nova Regular";
+    font-size: 1.2rem;
+}
+
+input#id_password {
+    font-family: "Proxima Nova Regular";
+    font-size: 1.2rem;
+}
+
+button#login {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1.3rem;
+}
+
+div#login-right {
+    position: relative;
+    align-content: center;
+    left: 15rem;
+}
+
+img#login-img {
+    max-width: 100%;
+    max-height: 100%;
+    position: relative;
+}
+
+/* profile.html */
+
+div#user-info {
+    padding-left: 1rem;
+}
+
+p#user-title {
+    padding-top: 1rem;
+    padding-bottom: 0;
+    font-size: 2rem;
+    color: #0086b3;
+    font-family: "Proxima Nova Bold";
+    margin: 0 !important;
+}
+
+p#user-text span {
+    margin: 0;
+    font-size: 1rem;
+    border-radius: 20px;
+    font-family: "Proxima Nova Regular";
+    background: #0085b2;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    color: white;
+}
+
+p#user-text {
+    font-family: "Proxima Nova Regular";
+}
+
+ /* пациент */
+p#patient-title {
+    font-size: 2rem !important;
+    color: #0086b3 !important;
+    font-family: "Proxima Nova Bold" !important;
+    border: none !important;
+    background: none !important;
+    padding-left: 0 !important;
+}
+
+div#patient-info-left p span {
+    margin: 0;
+    font-size: 1rem;
+    border-radius: 20px;
+    font-family: "Proxima Nova Regular";
+    background: #0085b2;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    color: white;
+}
+
+div#patient-info-left p  {
+    font-family: "Proxima Nova Regular";
+}
+
+div#patient-info {
+    height: 100%;
+    padding-bottom: 1rem;
+}
+
+div#patient-info-left {
+    position: relative;
+    left: 1rem;
+    width: 30rem;
+}
+
+div#patient-info-right {
+    position: relative;
+    align-content: center;
+
+}
+
+img#profile-img {
+    max-width: 100%;
+    left: 20rem;
+    max-height: 15rem;
+    position: relative;
+    bottom: 2rem;
+}
+
+/*таблица*/
+p#visits-title {
+    font-size: 2rem !important;
+    color: #0086b3 !important;
+    font-family: "Proxima Nova Bold" !important;
+}
+
+div#patient-visits button#filter-visits {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+}
+
+div#patient-analyses a#filter-analyses {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+    border: none;
+}
+p#analyses-title {
+    font-size: 2rem !important;
+    color: #0086b3 !important;
+    font-family: "Proxima Nova Bold" !important;
+}
+
+div#patient-analyses button#filter-analyses {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+    border: none;
+}
+a#reset-filters {
+    margin-top: 1rem;
+}
+div#patient-visits a#filter-visits {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    font-size: 1rem;
+}
+a.btn.btn-info.btn-sm {
+    background-color: #00607f;
+    color: white;
+    border: none;
+}
+ /* врач */
+
+p#doctor-title {
+    font-size: 2rem !important;
+    color: #0086b3 !important;
+    font-family: "Proxima Nova Bold" !important;
+    border: none !important;
+    background: none !important;
+    padding-left: 0 !important;
+}
+
+div#doctor-info-left p span {
+    margin: 0;
+    font-size: 1rem;
+    border-radius: 20px;
+    font-family: "Proxima Nova Regular";
+    background: #0085b2;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    color: white;
+}
+
+div#doctor-info-left p  {
+    font-family: "Proxima Nova Regular";
+}
+
+div#doctor-info {
+    height: 100%;
+    padding-bottom: 1rem;
+}
+
+div#doctor-info-left {
+    position: relative;
+    left: 1rem;
+    width: 30rem;
+}
+
+div#doctor-info-right {
+    position: relative;
+    align-content: center;
+
+}
+
+img#profile-img {
+    max-width: 100%;
+    left: 20rem;
+    max-height: 15rem;
+    position: relative;
+    bottom: 2rem;
+}
+
+/*таблица*/
+p#visits-title {
+    font-size: 2rem !important;
+    color: #0086b3 !important;
+    font-family: "Proxima Nova Bold" !important;
+}
+
+/* manage_visits.html */
+p#visit-list-title {
+    font-size: 2rem !important;
+    color: #0086b3 !important;
+    font-family: "Proxima Nova Bold" !important;
+}
+
+tr {
+    background: transparent !important;
+}
+
+th {
+    background: #9fcff9 !important;
+}
+
+td {
+    background: transparent !important;
+}
+
+button#filter-visits {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+    border: none;
+}
+
+a#filter-visits {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    font-size: 1rem;
+    border: none;
+}
+
+button#add-visit {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+    border: none;
+}
+
+ .active>.page-link, .page-link.active {
+    background-color: #00607f;
+    border: none;
+    color: white;
+}
+
+ .page-link, .page-link.active {
+    border: none;
+    color: #00607f;
+}
+
+/*manage_patients*/
+
+p#patient-list-title {
+    font-size: 2rem !important;
+    color: #0086b3 !important;
+    font-family: "Proxima Nova Bold" !important;
+}
+
+button#filter-patients {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+    border: none;
+}
+
+a#filter-patients {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    font-size: 1rem;
+    border: none;
+}
+
+button#add-patient {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+    border: none;
+}
+
+/*manage_doctors*/
+
+p#doctor-list-title {
+    font-size: 2rem !important;
+    color: #0086b3 !important;
+    font-family: "Proxima Nova Bold" !important;
+}
+
+button#filter-doctors {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+    border: none;
+}
+
+a#filter-doctors {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    font-size: 1rem;
+    border: none;
+}
+
+button#add-doctor {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1rem;
+    border: none;
+}
+
+/*add something html*/
+div#add {
+    height: 100%;
+    position: fixed;
+}
+
+div#add-left {
+    position: relative;
+}
+
+form#add-form {
+    background: #c6e0fc;
+    border-radius: 10px;
+    /* border-color: black; */
+    border: #00607f;
+    padding: 1.5rem;
+    padding-right: 15rem;
+    border-width: 0.3rem;
+    width: 40em;
+    height: 55rem;
+    position: relative;
+    overflow-y: scroll;
+}
+
+p#add-title {
+    white-space: nowrap;
+    font-size: 3rem;
+    color: #0086b3;
+    font-family: "Proxima Nova Bold";
+}
+
+button#add_save {
+    font-family: "Proxima Nova Regular";
+    margin-top: 1rem;
+    background-color: #00607f;
+    font-size: 1.3rem;
+}
+
+div#add-right {
+    position: relative;
+    align-content: center;
+    left: 15rem;
+}
+
+img#add-img {
+    max-width: 70%;
+    max-height: 70%;
+    right: 10rem;
+    position: relative;
+}

@@ -1,0 +1,10 @@
+{% extends '_layout.html' %}
+
+{% block content %}
+<h2>Debug Information</h2>
+<pre>
+Form data: {{ form_data }}
+ICD10 data: {{ icd10_data }}
+</pre>
+<a href="{% url 'manage_visits' %}" class="btn btn-primary">Continue to visits</a>
+{% endblock %}

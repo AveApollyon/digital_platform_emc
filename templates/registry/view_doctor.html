@@ -1,0 +1,36 @@
+<!-- delete_doctor.html -->
+
+{% extends '_layout.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <form method="post" id="add-form">
+    <p id="add-title">{{ doctor.last_name }} {{ doctor.first_name }}</p>
+       {% csrf_token %}
+        {{ form|crispy }}
+    </form>
+    <button type="submit" class="btn btn-primary" id="add_save">Сохранить изменения</button>
+    <form action="{% url 'delete_doctor' doctor.id %}" method="post" id="delete-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" id="delete-btn">Удалить врача</button>
+    </form>
+
+    <script>
+        $(document).ready(function() {
+            $('#save-btn').click(function(event) {
+                event.preventDefault();
+                var confirmUpdate = confirm('Вы уверены, что хотите обновить данные этого врача?');
+                if (confirmUpdate) {
+                    $('#save-form').submit();
+                }
+            });
+            $('#delete-btn').click(function(event) {
+                event.preventDefault();
+                var confirmDelete = confirm('Вы уверены, что хотите удалить этого врача и все его данные?');
+                if (confirmDelete) {
+                    $('#delete-form').submit();
+                }
+            });
+        });
+    </script>
+{% endblock %}

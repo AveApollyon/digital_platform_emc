@@ -1,0 +1,214 @@
+<!-- view_visit.html -->
+{% extends '_layout.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row" id="add">
+    <div class="col-md-6" id="add-left">
+        <form method="post" enctype="multipart/form-data" class="input-row" id="add-form">
+            <p id="add-title">Редактирование посещения</p>
+            {% csrf_token %}
+            {{ form|crispy }}
+
+            <!-- Скрытое поле для хранения диагнозов -->
+            <input type="hidden" name="icd10_diagnosis" id="id_icd10_diagnosis"
+                   value="{{ visit.icd10_diagnosis|default:'[]'|escapejs }}">
+
+            <label for="icd10_select">Диагноз (МКБ-10)</label>
+            <select id="icd10_select" multiple="multiple" style="width: 100%;"></select>
+
+            <div>
+                <button class="btn btn-primary" id="add_save" type="submit">Обновить</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-6" id="add-right">
+        <img src="{% static 'images/add.png' %}" id="add-img">
+    </div>
+</div>
+
+<!-- Подключаем jQuery, Select2 и стили -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet">
+
+<script>
+$(document).ready(function() {
+    // Инициализируем Select2 для поля симптомов
+    $("#id_symptoms").select2({
+        placeholder: "Введите симптомы",
+        multiple: true,
+        minimumInputLength: 2,
+        ajax: {
+            url: "{% url 'get_symptoms' %}",
+            dataType: "json",
+            data: function (params) {
+                return { term: params.term };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.map(function (item) {
+                        return { id: item.id, text: item.text };
+                    })
+                };
+            }
+        }
+    });
+
+    function stripHtml(html) {
+        if (!html) return '';
+        const tmp = document.createElement("div");
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || "";
+    }
+
+const icd10Select = document.getElementById('icd10_select');
+
+    // Функция для безопасного парсинга JSON
+    function safeJsonParse(jsonString) {
+        try {
+            // Если это уже объект, возвращаем как есть
+            if (typeof jsonString === 'object') return jsonString;
+
+            // Пытаемся разобрать как JSON
+            return JSON.parse(jsonString);
+        } catch (e) {
+            console.warn("Невалидный JSON, пытаемся восстановить:", jsonString);
+
+            // Пробуем исправить распространённые проблемы
+            try {
+                // Удаляем лишние кавычки и экранирования
+                let fixed = jsonString
+                    .replace(/'/g, '"')
+                    .replace(/None/g, 'null')
+                    .replace(/True/g, 'true')
+                    .replace(/False/g, 'false');
+
+                // Если строка выглядит как список, но без скобок
+                if (fixed.includes('{') && fixed.includes('}')) {
+                    return JSON.parse(fixed);
+                } else if (fixed.includes('[') && fixed.includes(']')) {
+                    return JSON.parse(fixed);
+                } else if (fixed.includes(',')) {
+                    // Пробуем обработать как список объектов
+                    return JSON.parse(`[${fixed}]`);
+                } else if (fixed) {
+                    // Пробуем обработать как одиночный объект
+                    return JSON.parse(`[${fixed}]`);
+                }
+
+                return [];
+            } catch (e2) {
+                console.error("Не удалось восстановить JSON:", e2);
+                return [];
+            }
+        }
+    }
+
+    // Загружаем начальные данные
+    try {
+        const initialData = $("#id_icd10_diagnosis").val();
+
+        if (initialData && initialData.trim() && initialData.trim() !== '[]') {
+            const parsedData = safeJsonParse(initialData);
+
+            if (Array.isArray(parsedData)) {
+                parsedData.forEach(diagnosis => {
+                    if (!diagnosis) return;
+
+                    const option = document.createElement('option');
+                    option.value = diagnosis.id || diagnosis.code || '';
+                    option.textContent = stripHtml(diagnosis.text || diagnosis.name || diagnosis.description || '');
+                    option.selected = true;
+                    option.setAttribute('data-entity-id', diagnosis.entity_id || '');
+                    option.setAttribute('data-chapter', diagnosis.chapter || '');
+                    option.setAttribute('data-url', diagnosis.url || '');
+                    icd10Select.appendChild(option);
+                });
+            }
+        }
+    } catch (e) {
+        console.error("Ошибка при загрузке начальных диагнозов:", e);
+    }
+
+    // Настройка Select2
+    $("#icd10_select").select2({
+        placeholder: "Введите диагноз для поиска",
+        multiple: true,
+        minimumInputLength: 3,
+        ajax: {
+            url: "{% url 'icd10_search' %}",
+            dataType: "json",
+            delay: 250,
+            data: function (params) {
+                return { q: params.term };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.results.map(item => ({
+                        id: item.id,
+                        text: stripHtml(item.text) || item.id,
+                        entity_id: item.entity_id,
+                        chapter: item.chapter,
+                        url: item.url
+                    }))
+                };
+            }
+        },
+        templateResult: function(item) {
+            if (!item.id) return item.text;
+            return $('<span>').text(item.text || item.id);
+        },
+        templateSelection: function(item) {
+            return item.text || item.id;
+        }
+    });
+
+    // Функция для обновления скрытого поля формы
+    function updateHiddenField() {
+        const options = Array.from(icd10Select.selectedOptions).map(option => ({
+            id: option.value,
+            text: option.textContent,
+            entity_id: option.getAttribute('data-entity-id'),
+            chapter: option.getAttribute('data-chapter'),
+            url: option.getAttribute('data-url')
+        }));
+
+        $("#id_icd10_diagnosis").val(JSON.stringify(options));
+    }
+
+    // Обновляем скрытое поле при изменении выбора
+    $("#icd10_select").on('change', updateHiddenField);
+
+    // Проверка перед отправкой
+    $("#add-form").on('submit', function(e) {
+        if (icd10Select.selectedOptions.length === 0) {
+            alert("Пожалуйста, выберите хотя бы один диагноз!");
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+<style>
+.select2-container--default .select2-selection--multiple {
+    min-height: 38px;
+    border: 1px solid #ced4da;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    padding: 0 5px;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 0 5px;
+    margin: 3px;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #999;
+    margin-right: 5px;
+}
+</style>
+{% endblock %}

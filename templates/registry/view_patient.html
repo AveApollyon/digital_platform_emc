@@ -1,0 +1,78 @@
+<!-- view_patient.html -->
+{% extends '_layout.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1></h1>
+    <div class="row">
+        <div class="col-md-6 left">
+            <form method="post" id="add-form">
+            <p id="add-title">{{ patient.last_name }} {{ patient.first_name }} </p>
+                {% csrf_token %}
+                {{ form|crispy }}
+            </form>
+            <button type="submit" class="btn btn-primary" id="add_save">Сохранить изменения</button>
+            <form action="{% url 'delete_patient' patient.id %}" method="post" id="delete-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" id="delete-btn">Удалить пациента</button>
+            </form>
+        </div>
+        <div class="col-md-6 right">
+            <h2>Посещения</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Дата посещения</th>
+                            <th>Врач</th>
+                        </tr>
+                    </thead>
+                    <tbody id="visit-list-body">
+                        {% if patient.visit_set.all %}
+                            {% for visit in patient.visit_set.all %}
+                                <tr class='clickable-row' data-href="{% url 'view_visit' visit.id %}">
+                                    <td>{{ visit.visit_date|date:"j F Y г." }}</td>
+                                    <td>{{ visit.doctor.last_name }} {{ visit.doctor.first_name }} {{ visit.doctor.middle_name }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" style="text-align: center">Нет посещений</td>
+                                </tr>
+                            </tfoot>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#save-btn').click(function(event) {
+                event.preventDefault();
+                var confirmUpdate = confirm('Вы уверены, что хотите обновить данные этого посещения?');
+                if (confirmUpdate) {
+                    $('#save-form').submit();
+                }
+            });
+            $('#delete-btn').click(function(event) {
+                event.preventDefault();
+                var confirmDelete = confirm('Вы уверены, что хотите удалить это посещение?');
+                if (confirmDelete) {
+                    $('#delete-form').submit();
+                }
+            });
+            $(".clickable-row").click(function() {
+                window.location = $(this).data("href");
+            });
+
+            $("#visit-list-body tr.clickable-row").mouseover(function() {
+                $(this).addClass("hover");
+            }).mouseout(function() {
+                $(this).removeClass("hover");
+            });
+        });
+    </script>
+{% endblock %}

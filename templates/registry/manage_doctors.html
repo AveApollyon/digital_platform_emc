@@ -1,0 +1,198 @@
+<!-- manage_doctors.html -->
+
+{% extends '_layout.html' %}
+{% load static %}
+
+{% block content %}
+<p id="patient-list-title">Управление персоналом</p>
+<button class="btn btn-primary" id="filter-doctors">Применить фильтры</button>
+<a class="btn btn-secondary" id="reset-filters" href="{% url 'manage_doctors' %}">Сбросить фильтры</a>
+<div id="doctor-list" data-manage-doctors-url="{% url 'manage_doctors' %}">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Фамилия
+                    <input type="text" name="last_name" id="last_name" class="form-control">
+                </th>
+                <th>Имя
+                    <input type="text" name="first_name" id="first_name" class="form-control">
+                </th>
+                <th>Отчество
+                    <input type="text" name="middle_name" id="middle_name" class="form-control">
+                </th>
+                <th>Дата рождения
+                    <input type="text" name="date_of_birth" id="date_of_birth" class="form-control" placeholder="Введите дату рождения">
+                </th>
+                <th>Пол
+                    <select name="gender" id="gender" class="form-control">
+                        <option value="">Все</option>
+                        <option value="М">Мужской</option>
+                        <option value="Ж">Женский</option>
+                    </select>
+                </th>
+                <th>Телефон
+                    <input type="text" name="phone_number" id="phone_number" class="form-control">
+                </th>
+                <th>Специальность
+                    <select name="specialty" id="specialty" class="form-control">
+                        <option value="">Все</option>
+                        <option value="ТЕР">Терапевт</option>
+                        <option value="НЕВ">Невролог</option>
+                        <option value="ОКУ">Окулист</option>
+                        <option value="ДЕР">Дерматолог</option>
+                        <option value="ХИР">Хирург</option>
+                    </select>
+                </th>
+            </tr>
+        </thead>
+        <tbody id="doctor-list-body">
+            {% for doctor in doctors %}
+                <tr class='clickable-row' data-href="{% url 'view_doctor' doctor.id %}">
+                    <td>{{ doctor.last_name }}</td>
+                    <td>{{ doctor.first_name }}</td>
+                    <td>{{ doctor.middle_name }}</td>
+                    <td>{{ doctor.date_of_birth }}</td>
+                    <td>{{ doctor.get_gender_display }}</td>
+                    <td>{{ doctor.phone_number }}</td>
+                    <td>{{ doctor.get_specialty_display }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    {% if doctors.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1" aria-label="First">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ doctors.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&lsaquo;</span>
+        </a>
+      </li>
+    {% endif %}
+
+    {% regroup doctors.paginator.page_range by None as all_pages %}
+    {% with total=doctors.paginator.num_pages %}
+    {% with current=doctors.number %}
+
+    <li class="page-item {% if 1 == current %}active{% endif %}">
+      <a class="page-link" href="?page=1">1</a>
+    </li>
+
+    {% if current > 4 %}
+      <li class="page-item disabled"><span class="page-link">...</span></li>
+    {% endif %}
+
+    {% for num in doctors.paginator.page_range %}
+      {% if num > 1 and num < total %}
+        {% if num >= current|add:-2 and num <= current|add:2 %}
+          <li class="page-item {% if num == current %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+    {% if current < total|add:-3 %}
+      <li class="page-item disabled"><span class="page-link">...</span></li>
+    {% endif %}
+
+    {% if total > 1 %}
+      <li class="page-item {% if total == current %}active{% endif %}">
+        <a class="page-link" href="?page={{ total }}">{{ total }}</a>
+      </li>
+    {% endif %}
+
+    {% endwith %}
+    {% endwith %}
+
+    {% if doctors.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ doctors.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&rsaquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ doctors.paginator.num_pages }}" aria-label="Last">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+
+</div>
+
+<button class="btn btn-primary" id="add-doctor" onclick="location.href='{% url 'add_doctor' %}'">Добавить врача</button>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+<script src="{% static 'scripts/doctors_list.js' %}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr("#date_of_birth", {
+            mode: "range",
+            dateFormat: "d.m.Y",
+            locale: "ru"
+        });
+
+        const filterButton = document.getElementById('filter-doctors');
+        filterButton.addEventListener('click', function() {
+            const lastName = document.getElementById('last_name').value;
+            const firstName = document.getElementById('first_name').value;
+            const middleName = document.getElementById('middle_name').value;
+            const dateOfBirth = document.getElementById('date_of_birth').value;
+            const gender = document.getElementById('gender').value;
+            const phoneNumber = document.getElementById('phone_number').value;
+            const specialty = document.getElementById('specialty').value;
+
+            const url = new URL(window.location.href);
+            url.searchParams.set('last_name', lastName);
+            url.searchParams.set('first_name', firstName);
+            url.searchParams.set('middle_name', middleName);
+            url.searchParams.set('date_of_birth', dateOfBirth);
+            url.searchParams.set('gender', gender);
+            url.searchParams.set('phone_number', phoneNumber);
+            url.searchParams.set('specialty', specialty);
+
+            window.location.href = url.href;
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        document.getElementById('last_name').value = urlParams.get('last_name') || '';
+        document.getElementById('first_name').value = urlParams.get('first_name') || '';
+        document.getElementById('middle_name').value = urlParams.get('middle_name') || '';
+        document.getElementById('date_of_birth').value = urlParams.get('date_of_birth') || '';
+        document.getElementById('gender').value = urlParams.get('gender') || '';
+        document.getElementById('phone_number').value = urlParams.get('phone_number') || '';
+        document.getElementById('specialty').value = urlParams.get('specialty') || '';
+
+        const doctorListBody = document.getElementById('doctor-list-body');
+        doctorListBody.addEventListener('click', function(event) {
+            if (event.target.tagName === 'TD' || event.target.tagName === 'TR') {
+                const row = event.target.closest('tr');
+                const href = row ? row.dataset.href : null;
+                if (href) {
+                    window.location = href;
+                }
+            }
+        });
+
+        const clickableRows = document.querySelectorAll("#doctor-list-body tr.clickable-row");
+        clickableRows.forEach(function(row) {
+            row.addEventListener("mouseover", function() {
+                this.classList.add("hover");
+            });
+            row.addEventListener("mouseout", function() {
+                this.classList.remove("hover");
+            });
+        });
+    });
+</script>
+
+{% endblock %}

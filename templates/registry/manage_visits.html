@@ -1,0 +1,177 @@
+<!-- manage_visits.html -->
+{% extends '_layout.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="visit-list" data-manage-visits-url="{% url 'manage_visits' %}">
+        <p id="visit-list-title">Управление посещениями</p>
+
+        <!-- Кнопки фильтрации -->
+        <button class="btn btn-primary" id="filter-visits">Применить фильтры</button>
+        <a class="btn btn-secondary" id="reset-filters" href="{% url 'manage_visits' %}">Сбросить фильтры</a>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Пациент
+                        <input type="text" name="patient" id="patient" class="form-control" placeholder="Поиск по пациенту">
+                    </th>
+                    <th>Врач
+                        <input type="text" name="doctor" id="doctor" class="form-control" placeholder="Поиск по врачу">
+                    </th>
+                    <th>Дата посещения
+                        <input type="text" name="visit_date" id="visit_date" class="form-control" placeholder="Введите дату посещения">
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="visit-list-body">
+                {% for visit in visits %}
+                    <tr class="clickable-row" data-href="{% url 'view_visit' visit.id %}">
+                        <td>{{ visit.patient.last_name }} {{ visit.patient.first_name }} {{ visit.patient.middle_name }}</td>
+                        <td>{{ visit.doctor.last_name }} {{ visit.doctor.first_name }} {{ visit.doctor.middle_name }}</td>
+                        <td>{{ visit.visit_date|date:"d.m.Y H:i" }}</td>
+{#                        <td>{{ visit.id }}</td> <!-- Выводим ID посещения для отладки -->#}
+
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center">
+            {% if visits.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1" aria-label="First">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ visits.previous_page_number }}" aria-label="Previous">
+                  <span aria-hidden="true">&lsaquo;</span>
+                </a>
+              </li>
+            {% endif %}
+
+            {# Логика вывода страниц с обрезкой #}
+            {% regroup visits.paginator.page_range by None as all_pages %}
+            {% with total=visits.paginator.num_pages %}
+            {% with current=visits.number %}
+
+            {# Покажем всегда первую страницу #}
+            <li class="page-item {% if 1 == current %}active{% endif %}">
+              <a class="page-link" href="?page=1">1</a>
+            </li>
+
+            {# Если между первой и соседними есть "пропуск" - показать троеточие #}
+            {% if current > 4 %}
+              <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+
+            {# Показываем 2 страницы до и после текущей (если они в диапазоне от 2 до total-1) #}
+            {% for num in visits.paginator.page_range %}
+              {% if num > 1 and num < total %}
+                {% if num >= current|add:-2 and num <= current|add:2 %}
+                  <li class="page-item {% if num == current %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+
+            {# Если между последними соседними и последней страницей есть пропуск - показать троеточие #}
+            {% if current < total|add:-3 %}
+              <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+
+            {# Последняя страница #}
+            {% if total > 1 %}
+              <li class="page-item {% if total == current %}active{% endif %}">
+                <a class="page-link" href="?page={{ total }}">{{ total }}</a>
+              </li>
+            {% endif %}
+
+            {% endwith %}
+            {% endwith %}
+
+            {% if visits.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ visits.next_page_number }}" aria-label="Next">
+                  <span aria-hidden="true">&rsaquo;</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ visits.paginator.num_pages }}" aria-label="Last">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+    </div>
+
+    <button class="btn btn-primary" id="add-visit" onclick="location.href='{% url 'add_visit' %}'">Добавить посещение</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script src="{% static 'scripts/visits_list.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            flatpickr("#visit_date", {
+                mode: "range", // Режим выбора промежутка
+                enableTime: true, // Включение выбора времени
+                dateFormat: "d.m.Y H:i", // Формат даты и времени, который будет отправлен на сервер
+                time_24hr: true, // Использование 24-часового формата времени
+                locale: "ru" // Установка языка на русский
+            });
+
+            // Обработчик для кнопки фильтрации
+            const filterButton = document.getElementById('filter-visits');
+            filterButton.addEventListener('click', function() {
+                const patient = document.getElementById('patient').value;
+                const doctor = document.getElementById('doctor').value;
+                const visit_date = document.getElementById('visit_date').value;
+
+                // Формируем URL с параметрами фильтрации
+                const url = new URL(window.location.href);
+                url.searchParams.set('patient', patient);
+                url.searchParams.set('doctor', doctor);
+                url.searchParams.set('visit_date', visit_date);
+
+                // Переходим на страницу с примененными фильтрами
+                window.location.href = url.href;
+            });
+
+            // Заполнение полей фильтрации данными из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            document.getElementById('patient').value = urlParams.get('patient') || '';
+            document.getElementById('doctor').value = urlParams.get('doctor') || '';
+            document.getElementById('visit_date').value = urlParams.get('visit_date') || '';
+
+            // Делаем строки таблицы кликабельными
+            const visitListBody = document.getElementById('visit-list-body');
+            visitListBody.addEventListener('click', function(event) {
+                if (event.target.tagName === 'TD' || event.target.tagName === 'TR') {
+                    const row = event.target.closest('tr');  // Получаем саму строку (если клик был по ячейке)
+                    const href = row ? row.dataset.href : null;
+                    if (href) {
+                        window.location = href;  // Перенаправляем на страницу с данными врача
+                    }
+                }
+            });
+
+            // Добавление эффекта наведения на строки
+            const clickableRows = document.querySelectorAll("#visit-list-body tr.clickable-row");
+            clickableRows.forEach(function(row) {
+                row.addEventListener("mouseover", function() {
+                    this.classList.add("hover");  // Добавляем класс hover на строку
+                });
+                row.addEventListener("mouseout", function() {
+                    this.classList.remove("hover");  // Убираем класс hover при уходе мыши
+                });
+            });
+        });
+    </script>
+{% endblock %}

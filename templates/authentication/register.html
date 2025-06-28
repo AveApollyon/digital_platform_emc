@@ -1,0 +1,24 @@
+{% extends '_layout.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <script src="{% static 'scripts/add_object_validation.js' %}"></script>
+
+    <div class="row" id="add">
+        <div class="col-md-6" id="add-left">
+            <form method="POST" class="input-row" id="add-form">
+                <p id="add-title">Регистрация</p>
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div>
+                    <button class="btn btn-primary" id="add_save" type="submit">Зарегистрироваться</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6" id="add-right">
+            <img src="/static/images/add.png" id="add-img">
+        </div>
+    </div>
+
+{% endblock %}
